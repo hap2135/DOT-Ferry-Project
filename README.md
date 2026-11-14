@@ -29,16 +29,16 @@ fed` (workspace).
 
 1. Install VS Code, then the **nRF Connect for VS Code Extension Pack**. VS Code
    will suggest it when you open this repo (see `.vscode/extensions.json`).
-2. Command Palette, then **nRF Connect: Manage Toolchains**. Install toolchain **v3.4.0**.
+2. Command Palette, then **nRF Connect: Manage Toolchains**. Install toolchain **v3.0.1**.
    Do **not** install an SDK via *Manage SDKs*: stock NCS lacks the nRF9151 Feather
    board. It comes from nfed (next step).
 3. Command Palette, then **nRF Connect: West Init**. Choose **Custom repository**:
    - URL: `https://github.com/circuitdojo/nrf9160-feather-examples-and-drivers.git`
      (Circuit Dojo's "nfed" workspace, which also covers the nRF9151)
-   - Revision: `v3.4.x` (nfed's default branch; pins NCS v3.4.0-rc1)
-   - Location: e.g. `C:
-fed`
-4. Command Palette, then **nRF Connect: West Update**. This downloads NCS v3.4.0-rc1 and Zephyr.
+   - Revision: `v3.0.x` (as specified in Circuit Dojo's docs)
+   - Location: `C:
+fed` (no spaces, outside this repo)
+4. Command Palette, then **nRF Connect: West Update**. This downloads NCS v3.0.x and Zephyr.
    It takes a while.
 
 ## Build
@@ -49,7 +49,7 @@ fed`
 1. In the nRF Connect sidebar, **Open an existing application**, then select `firmware/app`.
 2. **Add build configuration**:
    - SDK: the nfed workspace from step 3
-   - Toolchain: v3.4.0
+   - Toolchain: v3.0.1
    - Board target: `circuitdojo_feather_nrf9151/nrf9151/ns`
    - Sysbuild: enabled (default)
 3. Click **Build**.
@@ -58,7 +58,7 @@ CLI equivalent, from an **nRF Connect terminal** (so the toolchain env is active
 
 ```sh
 cd firmware/app
-west build -b circuitdojo_feather_nrf9151/nrf9151/ns -p -d build --sysbuild
+west build -b circuitdojo_feather_nrf9151/nrf9151/ns -p -d build/circuitdojo_feather_nrf9151 --sysbuild
 ```
 
 ## Flash
@@ -76,7 +76,7 @@ irm https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools
 Flash from `firmware/app`:
 
 ```sh
-probe-rs download --chip nRF9151_xxAA --binary-format hex build/merged.hex
+probe-rs download --chip nRF9151_xxAA --binary-format hex build/circuitdojo_feather_nrf9151/merged.hex
 probe-rs reset --chip nRF9151_xxAA
 ```
 
