@@ -36,8 +36,7 @@ fed` (workspace).
    - URL: `https://github.com/circuitdojo/nrf9160-feather-examples-and-drivers.git`
      (Circuit Dojo's "nfed" workspace, which also covers the nRF9151)
    - Revision: `v3.0.x` (as specified in Circuit Dojo's docs)
-   - Location: `C:
-fed` (no spaces, outside this repo)
+   - Location: `C:\nfed` (no spaces, outside this repo)
 4. Command Palette, then **nRF Connect: West Update**. This downloads NCS v3.0.x and Zephyr.
    It takes a while.
 
