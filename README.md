@@ -43,6 +43,9 @@ fed`
 
 ## Build
 
+> **Clone this repo to a path with no spaces** (e.g. `C:\DOT-Ferry-Project`).
+> Zephyr's sysbuild fails on paths like `C:\Nordic DOT`.
+
 1. In the nRF Connect sidebar, **Open an existing application**, then select `firmware/app`.
 2. **Add build configuration**:
    - SDK: the nfed workspace from step 3
