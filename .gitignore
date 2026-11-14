@@ -1,0 +1,20 @@
+# Zephyr / NCS build output
+build/
+build_*/
+twister-out*/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Keys - never commit signing keys
+*.pem
