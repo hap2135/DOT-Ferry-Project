@@ -19,44 +19,64 @@ firmware/
 circuitdojo_feather_nrf9151/nrf9151/ns
 ```
 
-## One-time SDK setup (Windows)
+## One-time SDK setup (Windows) — nRF Connect for VS Code
 
-The app is built against Circuit Dojo's west workspace
-([nfed](https://github.com/circuitdojo/nrf9160-feather-examples-and-drivers),
-which also covers the nRF9151). The SDK lives **outside** this repo.
+This project uses **nRF Connect for VS Code** (not Circuit Dojo's Zephyr Tools).
+It follows the [Circuit Dojo nRF Connect guide](https://docs.circuitdojo.com/nrf9151-feather/using-vscode.html).
+The SDK lives **outside** this repo, e.g. `C:
+cs` (toolchain) and `C:
+fed` (workspace).
 
-Recommended path ([Circuit Dojo guide](https://docs.circuitdojo.com/nrf9151-feather/sdk-setup-ui.html)):
-
-1. Install VS Code, Git and Python >= 3.10.
-2. Install the **Zephyr Tools** extension (`circuitdojo.zephyr-tools`).
-3. In the Zephyr Tools sidebar: **Run Setup**, then **Init Repo** with
-   `https://github.com/circuitdojo/nrf9160-feather-examples-and-drivers.git`.
-
-Alternative: nRF Connect for VS Code, toolchain/SDK **v3.0.x**, then
-"West Init" with the nfed URL as a custom repository
-([guide](https://docs.circuitdojo.com/nrf9151-feather/using-vscode.html)).
+1. Install VS Code, then the **nRF Connect for VS Code Extension Pack**. VS Code
+   will suggest it when you open this repo (see `.vscode/extensions.json`).
+2. Command Palette, then **nRF Connect: Manage Toolchains**. Install toolchain **v3.0.1**.
+3. Command Palette, then **nRF Connect: West Init**. Choose **Custom repository**:
+   - URL: `https://github.com/circuitdojo/nrf9160-feather-examples-and-drivers.git`
+     (Circuit Dojo's "nfed" workspace, which also covers the nRF9151)
+   - Revision: `v3.0.x`
+   - Location: e.g. `C:
+fed`
+4. Command Palette, then **nRF Connect: West Update**. This downloads NCS v3.0.x and Zephyr.
+   It takes a while.
 
 ## Build
 
-From a shell with the NCS/nfed environment active:
+1. In the nRF Connect sidebar, **Open an existing application**, then select `firmware/app`.
+2. **Add build configuration**:
+   - SDK: the nfed workspace from step 3
+   - Toolchain: v3.0.1
+   - Board target: `circuitdojo_feather_nrf9151/nrf9151/ns`
+   - Sysbuild: enabled (default)
+3. Click **Build**.
+
+CLI equivalent, from an **nRF Connect terminal** (so the toolchain env is active):
 
 ```sh
 cd firmware/app
 west build -b circuitdojo_feather_nrf9151/nrf9151/ns -p -d build --sysbuild
 ```
 
-Or in VS Code with Zephyr Tools, open `firmware/app` and use **Build**.
-
 ## Flash
 
-The Feather has an on-board CMSIS-DAP debugger over USB, so you don't need an external probe.
+The Feather has an on-board **CMSIS-DAP** debugger over USB. The nRF Connect
+extension's built-in Flash action expects a J-Link / nrfutil probe, so it
+won't work with this board. Use **probe-rs** instead.
 
-- Zephyr Tools: **Flash** button, then **Serial Monitor** to see the console.
-- Or with [probe-rs](https://probe.rs):
-  ```sh
-  probe-rs download --chip nRF9151_xxAA --binary-format hex build/merged.hex
-  probe-rs reset --chip nRF9151_xxAA
-  ```
+Install probe-rs once (PowerShell):
+
+```powershell
+irm https://github.com/probe-rs/probe-rs/releases/latest/download/probe-rs-tools-installer.ps1 | iex
+```
+
+Flash from `firmware/app`:
+
+```sh
+probe-rs download --chip nRF9151_xxAA --binary-format hex build/merged.hex
+probe-rs reset --chip nRF9151_xxAA
+```
+
+Serial console: use the nRF Connect **Serial Terminal**, or any terminal at 115200 baud
+on the Feather's USB COM port.
 
 ## Notes
 
