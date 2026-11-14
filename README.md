@@ -13,6 +13,11 @@ firmware/
     sysbuild.conf          Turns on MCUboot, with no image signing (required, see Notes)
     sysbuild/mcuboot.conf  MCUboot settings (multithreading on)
     src/main.c
+  at_client/      Test firmware: modem AT commands on the COM port (cellular bring-up)
+scripts/
+  build.ps1       Build an app from plain PowerShell (-App app | at_client)
+  flash.ps1       Flash an app with probe-rs and reset
+  cell_check.ps1  Cellular connectivity check over the COM port (SIM in / SIM out)
 ```
 
 ## Board target
@@ -104,6 +109,54 @@ Logs also go to **SEGGER RTT** over the debug link, as a backup. From `firmware/
 ```sh
 probe-rs attach --chip nRF9151_xxAA build/circuitdojo_feather_nrf9151/app/zephyr/zephyr.elf
 ```
+
+## Cellular bring-up check (SIM in / SIM out)
+
+`firmware/at_client` turns the COM port into a raw AT-command interface to the modem.
+`scripts/cell_check.ps1` sends a fixed AT sequence and prints PASS/FAIL per check.
+Needs only Windows PowerShell and probe-rs, no other installs.
+
+1. Connect the Feather by USB-C (**with the LTE antenna attached**) and close any serial
+   terminal on its COM port.
+2. Flash the test firmware (`build.ps1` is only needed if `firmware/at_client/build` is
+   missing; it needs the SDK setup above):
+
+   ```powershell
+   .\scripts\build.ps1 -App at_client
+   .\scripts\flash.ps1 -App at_client
+   ```
+3. Run the check (power off before inserting or removing the SIM):
+
+   ```powershell
+   .\scripts\cell_check.ps1 -Mode SimOut              # SIM removed
+   .\scripts\cell_check.ps1 -Mode SimIn               # SIM inserted
+   .\scripts\cell_check.ps1 -Mode SimIn -Port COM7 -RegTimeoutSec 300
+   ```
+   If scripts are blocked, run `powershell -ExecutionPolicy Bypass -File .\scripts\cell_check.ps1 -Mode SimIn`.
+
+| Check | SimIn passes when | SimOut passes when |
+|---|---|---|
+| Modem responds to `AT` | `OK` | `OK` |
+| Radio on, `AT+CFUN=1` | `OK` | `OK` |
+| SIM, `AT+CPIN?` | `+CPIN: READY` | `ERROR` (no SIM) |
+| ICCID, `AT%XICCID` | ICCID returned | `ERROR` |
+| Registration, `AT+CEREG?` | stat `1` (home) or `5` (roaming) within `-RegTimeoutSec` (default 180 s) | never `1`/`5` over 30 s (expect `90` = no SIM) |
+| IP address, `AT+CGPADDR` | an IP is assigned | (not checked) |
+
+It also logs model, modem firmware, IMEI, IMSI, operator (`AT+COPS?`), signal (`AT+CESQ`),
+`AT%XMONITOR` and the APN (`AT+CGDCONT?`). The full AT transcript is saved as
+`cell_check_<Mode>_<timestamp>.log` in the current folder. Exit code: `0` pass, `1` a
+check failed, `2` can't talk to the modem.
+
+Defaults: LTE-M + NB-IoT (`-SystemMode 1,1,0,0`), APN from the network/SIM. If SimIn
+fails at registration, the log shows why: `3` = denied (SIM not activated, or the
+carrier doesn't allow this device or IMEI), `2`/`4` = searching or no coverage (check the
+antenna, try outdoors, raise `-RegTimeoutSec`; the first attach can take minutes).
+
+To send AT commands by hand instead, open the COM port at 115200 8N1 in a terminal
+that ends lines with CR, and type e.g. `AT+CFUN=1`, then `AT+CEREG?`.
+
+Reflash the main firmware afterwards with `.\scripts\build.ps1; .\scripts\flash.ps1`.
 
 ## Notes
 
